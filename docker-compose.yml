@@ -1,0 +1,44 @@
+version: '3'
+services:
+  fashi-nginx:
+    container_name: "fashi-nginx"
+    build:
+      context: ./docker/nginx
+    depends_on:
+      - fashi-app
+    ports:
+      - 80:80
+    volumes:
+      - ./:/src
+
+  fashi-app:
+    container_name: "fashi-app"
+    build:
+      context: ./docker/php
+    depends_on:
+      - fashi-mysql
+    ports:
+      - 5173:5173
+    volumes:
+      - ./:/src
+      - /src/node_modules
+      - /src/vendor
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+
+  fashi-mysql:
+    image: mysql:8.0.33
+    command: --max_allowed_packet=32505856
+    container_name: "fashi-mysql"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=fashi
+    ports:
+      - 3306:3306
+
+  fashi-redis:
+    image: redis:alpine
+    container_name: "fashi-redis"
+    ports:
+      - 16379:6379
